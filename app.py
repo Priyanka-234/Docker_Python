@@ -26,7 +26,7 @@ def play_game():
         elif guess < secret:
             print("📉 Too low!")
         else:
-            print("📈 Too high!")
+            print("📈 Too Yes high!")
 
         attempts -= 1
         print(f"Attempts left: {attempts}")
