@@ -1,2 +1,3 @@
-FROM nginx:alphine
-COPY app/usr/share/nginx/html
+FROM nginx:alpine
+
+COPY app/ /usr/share/nginx/html/
