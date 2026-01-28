@@ -1,6 +1,10 @@
 name: First Workflow
 
-on: push
+on:
+  push:
+    branches:
+      - main
+      - feature-*
 
 jobs:
   build:
