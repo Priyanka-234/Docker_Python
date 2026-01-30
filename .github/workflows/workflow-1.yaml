@@ -1,50 +1,28 @@
-name: Manual Docker Build & Push to ECR
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-on:
-  workflow_dispatch:
-    inputs:
-      tag_name:
-        description: "Docker image tag (e.g., v1.0.0)"
-        required: true
-        default: "v1.0.0"
+  - name: Configure AWS credentials
+    uses: aws-actions/configure-aws-credentials@v4
+    with:
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws-region: us-east-1
 
-env:
-  AWS_REGION: us-east-1
-  ECR_REPO: priya_123
-  IMAGE_NAME: priya_123
+  - name: Create ECR repository if not exists
+    run: |
+      aws ecr describe-repositories --region us-east-1 --repository-names priya_123 \
+      || aws ecr create-repository --region us-east-1 --repository-name priya_123
 
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
+  - name: Login to Amazon ECR
+    id: login-ecr
+    uses: aws-actions/amazon-ecr-login@v2
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  - name: Build Docker image
+    run: docker build -t priya_123:v1 .
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build Docker image
-        run: |
-          echo "Building Docker image with tag: ${{ github.event.inputs.tag_name }}"
-          docker build -t ${{ env.IMAGE_NAME }}:${{ github.event.inputs.tag_name }} .
-
-      - name: Tag Docker image for ECR
-        run: |
-          ECR_URI=${{ steps.login-ecr.outputs.registry }}
-          docker tag ${{ env.IMAGE_NAME }}:${{ github.event.inputs.tag_name }} \
-            $ECR_URI/${{ env.ECR_REPO }}:${{ github.event.inputs.tag_name }}
-
-      - name: Push Docker image to ECR
-        run: |
-          ECR_URI=${{ steps.login-ecr.outputs.registry }}
-          docker push $ECR_URI/${{ env.ECR_REPO }}:${{ github.event.inputs.tag_name }}
-          echo "Image pushed: $ECR_URI/${{ env.ECR_REPO }}:${{ github.event.inputs.tag_name }}"
+  - name: Tag & Push Docker image
+    run: |
+      ECR_URI=${{ steps.login-ecr.outputs.registry }}
+      docker tag priya_123:v1 $ECR_URI/priya_123:v1
+      docker push $ECR_URI/priya_123:v1
