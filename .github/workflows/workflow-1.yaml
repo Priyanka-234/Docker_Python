@@ -1,15 +1,15 @@
-name: Manual Docker Build & Push
+name: Manual Docker Build & Push to ECR
 
 on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: "Enter the Docker tag version (e.g., v1.0.0)"
+        description: "Docker image tag (e.g., v1.0.0)"
         required: true
         default: "v1.0.0"
 
 env:
-  AWS_REGION: ap-south-1
+  AWS_REGION: us-east-1
   ECR_REPO: priya_123
   IMAGE_NAME: priya_123
 
@@ -47,4 +47,4 @@ jobs:
         run: |
           ECR_URI=${{ steps.login-ecr.outputs.registry }}
           docker push $ECR_URI/${{ env.ECR_REPO }}:${{ github.event.inputs.tag_name }}
-          echo "Image pushed successfully: $ECR_URI/${{ env.ECR_REPO }}:${{ github.event.inputs.tag_name }}"
+          echo "Image pushed: $ECR_URI/${{ env.ECR_REPO }}:${{ github.event.inputs.tag_name }}"
