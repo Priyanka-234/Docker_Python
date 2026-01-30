@@ -1,33 +1,42 @@
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+name: Manual Docker Build & Push to ECR
 
-  - name: Configure AWS credentials
-    uses: aws-actions/configure-aws-credentials@v4
-    with:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      aws-region: us-east-1
+on:
+  workflow_dispatch:
 
-  - name: Verify AWS Account
-    run: aws sts get-caller-identity
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
 
-  - name: Create ECR repository
-    run: |
-      aws ecr create-repository \
-        --region us-east-1 \
-        --repository-name priya_123 \
-      || echo "ECR repo already exists"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Login to Amazon ECR
-    id: login-ecr
-    uses: aws-actions/amazon-ecr-login@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-  - name: Build Docker image
-    run: docker build -t priya_123:v1 .
+      - name: Verify AWS Account
+        run: aws sts get-caller-identity
 
-  - name: Tag & Push Docker image
-    run: |
-      ECR_URI=${{ steps.login-ecr.outputs.registry }}
-      docker tag priya_123:v1 $ECR_URI/priya_123:v1
-      docker push $ECR_URI/priya_123:v1
+      - name: Create ECR repository
+        run: |
+          aws ecr create-repository \
+            --region us-east-1 \
+            --repository-name priya_123 \
+          || echo "ECR repo already exists"
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        run: docker build -t priya_123:v1 .
+
+      - name: Tag & Push Docker image
+        run: |
+          ECR_URI=${{ steps.login-ecr.outputs.registry }}
+          docker tag priya_123:v1 $ECR_URI/priya_123:v1
+          docker push $ECR_URI/priya_123:v1
