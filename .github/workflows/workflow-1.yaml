@@ -9,10 +9,15 @@ steps:
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       aws-region: us-east-1
 
-  - name: Create ECR repository if not exists
+  - name: Verify AWS Account
+    run: aws sts get-caller-identity
+
+  - name: Create ECR repository
     run: |
-      aws ecr describe-repositories --region us-east-1 --repository-names priya_123 \
-      || aws ecr create-repository --region us-east-1 --repository-name priya_123
+      aws ecr create-repository \
+        --region us-east-1 \
+        --repository-name priya_123 \
+      || echo "ECR repo already exists"
 
   - name: Login to Amazon ECR
     id: login-ecr
