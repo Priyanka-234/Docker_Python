@@ -10,7 +10,7 @@ on:
 
 env:
   AWS_REGION: ap-south-1
-  ECR_REPO: priya_123 # your ECR repository name
+  ECR_REPO: priya_123
   IMAGE_NAME: priya_123
 
 jobs:
@@ -41,10 +41,10 @@ jobs:
         run: |
           ECR_URI=${{ steps.login-ecr.outputs.registry }}
           docker tag ${{ env.IMAGE_NAME }}:${{ github.event.inputs.tag_name }} \
-                     $ECR_URI/${{ env.ECR_REPO }}:${{ github.event.inputs.tag_name }}
+            $ECR_URI/${{ env.ECR_REPO }}:${{ github.event.inputs.tag_name }}
 
       - name: Push Docker image to ECR
         run: |
           ECR_URI=${{ steps.login-ecr.outputs.registry }}
           docker push $ECR_URI/${{ env.ECR_REPO }}:${{ github.event.inputs.tag_name }}
-          echo "Image pushed successfully: $ECR_URI/${{ env.ECR_REPO }}:${{ 
+          echo "Image pushed successfully: $ECR_URI/${{ env.ECR_REPO }}:${{ github.event.inputs.tag_name }}"
